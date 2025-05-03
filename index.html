@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Breast Cancer Detection</title>
+  <link rel="stylesheet" href="C:\Users\paul9\BreastCancerProject\staticc\style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #uploadedImage:hover {
+      border-color: #FFD700;
+      
+    }
+    img {
+      margin-top: 20px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      max-width: 300px;
+      display: none; /* Hide the image by default */
+    }
+    #uploadedImage{
+      margin: 0 auto;
+      position: absolute;
+      margin-left: 11.3vw;
+      
+    }
+    #uploadImage:hover{
+
+    }
+  </style>
+
+</head>
+<body>
+  <div class="container">
+    <h1>Breast Cancer Detection</h1>
+    <form id="uploadForm" action="http://127.0.0.1:5000/upload" method="POST" enctype="multipart/form-data">
+      <label for="fileUpload">Upload Image:</label>
+      <input type="file" id="fileUpload" name="file" title="Choose an image file" placeholder="Select an image" required>
+      <button type="submit">Detect Cancer</button>
+    </form>
+    <!-- Added default text for debugging -->
+    <p id="result">Waiting for prediction...</p>
+    <img id="uploadedImage" alt="Uploaded Image Preview" title="Uploaded Image" style="display: none; max-width: 300px;">
+  </div>
+  
+  <script>
+    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      console.log("Form submitted");
+
+      let fileInput = document.getElementById("fileUpload");
+      if (!fileInput.files.length) {
+        alert("Please select an image!");
+        return;
+      }
+
+      let formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      try {
+        let response = await fetch("http://127.0.0.1:5000/upload", {
+          method: "POST",
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Server error:", errorData);
+          throw new Error("Failed to upload image: " + (errorData.error || "Unknown error"));
+        }
+        
+        let result = await response.json();
+        console.log("Response from server:", result);
+        
+        // Set the text of the result paragraph to the prediction result.
+        document.getElementById("result").innerText = "Prediction: " + result.prediction;
+        
+        // Display the uploaded image preview.
+        let uploadedImage = document.getElementById("uploadedImage");
+        uploadedImage.src = URL.createObjectURL(fileInput.files[0]);
+        uploadedImage.style.display = "block";
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("result").innerText = "Error in detecting cancer!";
+      }
+    });
+  </script>
+</body>
+</html>
